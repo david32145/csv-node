@@ -11,8 +11,8 @@ An awesome library for manager csv files with `javascript/typescript`
     - [Alias](#-alias)
     - [Skip Lines](#-skip-lines)
     - [Limit](#-limit)
-  - [The filePath](#-the-filePath)
-  - [Typescript Support](#-typescript-support)
+ - [The filePath](#-the-filePath)
+ - [Typescript Support](#-typescript-support)
 
 ## Features
 

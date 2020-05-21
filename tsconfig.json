@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "target": "es6",
+    "module": "ESNext",
+    "outDir": "./dist",
+    "strict": true,
+    "baseUrl": "./",
+    "declaration": true,
+    "paths": {
+      "~/*": [
+        "./*"
+      ]
+    },
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": [
+    "lib/**/*",
+    "index.ts",
+    "__test__/**/*"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}

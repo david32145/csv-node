@@ -1,0 +1,7 @@
+__test__
+node_modules
+.gitignore
+index.ts
+jest.config.js
+tsconfig.json
+yarn.lock

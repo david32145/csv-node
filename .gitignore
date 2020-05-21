@@ -1,0 +1,5 @@
+__test__/coverage/*
+!__test__/coverage/.gitkeep
+node_modules
+yarn.lock
+dist

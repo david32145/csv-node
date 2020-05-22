@@ -8,13 +8,17 @@ jobs:
     name: build-project
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout repository # Login into github
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
       - name: Setup in NodeJS
         uses: actions/setup-node@master # For init environment with nodejs
         with: 
           node-version: 10.0.0
       - name: Install dependencies
-        run: yarn install
-      - name: "Running all test and collect the coverage"
+        run: yarn install && ls -a
+      - name: Running all test and collect the coverage
         run: yarn test --coverage
       - name: Collect coverage
         uses: coverallsapp/github-action@master

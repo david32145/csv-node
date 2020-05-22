@@ -1,18 +1,37 @@
 # CSV Node
 
-An awesome library for manager csv files with `javascript/typescript`
+<p align="center">
+  <img src="./assets/Logo.png" width="250" alt="Unform" />
+</p>
 
-- [Features](#-features)
-- [Install](#-install)
-- [Usage](#-usage)
-  - [Basic Usage](#-basic-usage)
-  - [Options](#-options)
-  - [Options Usage](#-options-usage)
-    - [Alias](#-alias)
-    - [Skip Lines](#-skip-lines)
-    - [Limit](#-limit)
- - [The filePath](#-the-filePath)
- - [Typescript Support](#-typescript-support)
+<h3 align="center"> 
+  An awesome library for manager csv files  with <code>javascript/typescript</code>
+</h3>
+
+<div align="center">
+
+[![Actions Status](https://github.com/david32145/csv-node/workflows/csv-node-build/badge.svg)](https://github.com/david32145/csv-node/actions)
+
+</div>
+
+## Overview
+
+The library is for read csv and manager csv tables like humam, automating the process of read
+and serializer the csv rows to obeject.
+
+## Sumary
+
+- [Features](#features)
+- [Install](#install)
+- [Usage](#usage)
+  - [Basic Usage](#basic-usage)
+  - [Options](#options)
+  - [Options Usage](#options-usage)
+    - [Alias](#alias)
+    - [Skip Lines](#skip-lines)
+    - [Limit](#limit)
+ - [The filePath](#the-filePath)
+ - [Typescript Support](#typescript-support)
 
 ## Features
 
@@ -20,6 +39,12 @@ An awesome library for manager csv files with `javascript/typescript`
 - Alias in colunms of csv table;
 - Skip row of csv;
 - Limit numbers of rows.
+
+## Next Features
+
+- Map row;
+- Agregates function (max, min, avg) in an colunm;
+- Filter rows.
 
 ## Install
 
@@ -54,7 +79,7 @@ import path from "path"
 
 const filePath = path.resolver(__dirname, "names.csv")
 
-const csvReader = creareReadCSVFile(filePath)
+const csvReader = createReadCSVFile(filePath)
 
 const names = csvReader.read()
 console.log(names)
@@ -90,7 +115,7 @@ The second param of `createReadCSVFile` is an object of options, the options ava
 #### Alias
 
 ```js
-const csvReader = creareReadCSVFile(filePath, {
+const csvReader = createReadCSVFile(filePath, {
   alias: {
     name: "Name"
   }
@@ -118,7 +143,7 @@ console.log(names)
 #### Skip Lines
 
 ```js
-const csvReader = creareReadCSVFile(filePath, {
+const csvReader = createReadCSVFile(filePath, {
   skipLines: 1
 })
 
@@ -140,7 +165,7 @@ console.log(names)
 #### Limit
 
 ```js
-const csvReader = creareReadCSVFile(filePath, {
+const csvReader = createReadCSVFile(filePath, {
   limit: 2
 })
 
@@ -159,7 +184,7 @@ console.log(names)
 **/
 ```
 
-the options can be combined
+the options can be combined.
 
 ## The filePath
 
@@ -175,7 +200,7 @@ interface Person {
   age: number
 }
 
-const csvReader = creareReadCSVFile<Person>(filePath)
+const csvReader = createReadCSVFile<Person>(filePath)
 
 const names = csvReader.read() // Return Person[]
 console.log(names)

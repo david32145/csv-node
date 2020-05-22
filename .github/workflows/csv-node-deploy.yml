@@ -1,0 +1,25 @@
+name: csv-node-deploy
+on:
+  create:
+    tag:
+      - v*
+jobs:
+  npm-publish:
+    name: npm-publish
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkuot on github repository
+        uses: actions/checkout@master # For checkout
+      - name: Setup in NodeJS
+        uses: actions/setup-node@master # For init environment with nodejs
+        with: 
+          node-version: 10.0.0
+      - name: Publish if version has been updated
+        uses: pascalgn/npm-publish-action # For deploy in npm
+        with:
+          tag_name: "%s"
+          tag_message: "%s"
+          commit_pattern: "^Release (\\S+)"
+        env: # Variables for npm publish
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Automatic
+          NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }} # You need to set this in your repo settings

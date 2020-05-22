@@ -6,7 +6,7 @@ on:
 jobs:
   npm-publish:
     name: npm-publish
-    runs-os: ubuntu-latest
+    runs-on: ubuntu-latest
     steps:
       - name: Checkuot on github repository
         uses: actions/checkout@master # For checkout

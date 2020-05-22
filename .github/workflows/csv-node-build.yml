@@ -1,0 +1,23 @@
+name: csv-node-build
+on:
+  pull_request:
+    branches:
+      - master
+jobs:
+  build-project:
+    name: build-project
+    run-os: ubuntu-latest
+    steps:
+      - name: Setup in NodeJS
+        uses: actions/setup-node@master # For init environment with nodejs
+        with: 
+          node-version: 10.0.0
+      - name: Install dependencies
+        run: yarn install
+      - name: "Running all test and collect the coverage"
+        run: yarn test --coverage
+      - name: Collect coverage
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path-to-lcov: ./__test__/coverage/Icov.info

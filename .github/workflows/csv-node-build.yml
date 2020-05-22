@@ -15,7 +15,7 @@ jobs:
       - name: Setup in NodeJS
         uses: actions/setup-node@master # For init environment with nodejs
         with: 
-          node-version: 10.0.0
+          node-version: 12
       - name: Install dependencies
         run: yarn install && ls -a
       - name: Running all test and collect the coverage

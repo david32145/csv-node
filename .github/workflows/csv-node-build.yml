@@ -6,7 +6,7 @@ on:
 jobs:
   build-project:
     name: build-project
-    runs-os: ubuntu-latest
+    runs-on: ubuntu-latest
     steps:
       - name: Setup in NodeJS
         uses: actions/setup-node@master # For init environment with nodejs

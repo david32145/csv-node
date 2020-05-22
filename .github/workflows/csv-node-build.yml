@@ -8,20 +8,11 @@ jobs:
     name: build-project
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository # Login into github
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
       - name: Setup in NodeJS
         uses: actions/setup-node@master # For init environment with nodejs
         with: 
           node-version: 12
       - name: Install dependencies
-        run: yarn install && ls -a
+        run: yarn install
       - name: Running all test and collect the coverage
-        run: yarn test --coverage
-      - name: Collect coverage
-        uses: coverallsapp/github-action@master
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          path-to-lcov: ./__test__/coverage/Icov.info
+        run: yarn test

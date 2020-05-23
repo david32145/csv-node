@@ -1,5 +1,6 @@
 __test__/coverage/*
 !__test__/coverage/.gitkeep
+.vscode
 node_modules
 yarn.lock
 dist

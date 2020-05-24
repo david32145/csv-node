@@ -1,5 +1,9 @@
 __test__
-node_modules
+.vscode
+lib/
+node_modules/
+.github
+.git
 .gitignore
 index.ts
 jest.config.js

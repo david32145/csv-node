@@ -1,46 +1,63 @@
 import path from "path"
+import {AliasMap} from "~/lib/readCSV"
 
-export function parserHeader(headerLine: string): string[] {
-  if(!headerLine || !headerLine.trim().length){
-    throw new Error("Header cannot be null or empty")
-  }
-  return headerLine.split(",")
-}
-
-interface ParseLineOptions {
-  mapAlias?: {[property: string]: string}
-}
-
-function getIndexName(header: string[], index: number, options?: ParseLineOptions) {
-  let indexName = header[index]
-  if(options && options.mapAlias){
-    const map = options.mapAlias
-    if(!!map[indexName]){
-      indexName = map[indexName]
+class CSVReadUtil {
+ /**
+  * 
+  * @param {string} filePath the filePath of csv
+  * 
+  * if filePath not is absolute, will search the file
+  * starting of the root folder/project.
+  * 
+  * @returns {string} the absolute path of filePath
+  */
+  public getAbsolutePath(filePath: string): string {
+    if (!path.isAbsolute(filePath)){
+      return path.resolve(process.cwd(), filePath)
     }
+    return filePath
   }
-  return indexName
-}
 
-export function parseLine<T>(line: string, header: string[], options?: ParseLineOptions): T {
-  return line.split(",")
-    .reduce<any>((acc, item, index) => {
-      const indexName = getIndexName(header, index, options)
-      acc[indexName] = item
+  /**
+   * 
+   * @param {string} header the header line of csv
+   * @param {string} delimiter the delimiter between columns
+   * 
+   * split the header row in an array of columns
+   * 
+   * @returns {string[]} array of columns
+   */
+  public splitHeader(header: string, delimiter: string = ","): string[] {
+    if(!header || !header.trim().length){
+      throw new TypeError("Header cannot be null or empty")
+    }
+    return header.split(delimiter)
+  }
+
+  /**
+   * 
+   * @param {string} nativeHeaders the originais headers 
+   * @param {AliasMap} alias the map for rename headers
+   * 
+   * Rename headers with the map pass in `alias`
+   */
+  public mapNativeHeaderToHeader(nativeHeaders: string[], alias?: AliasMap): string [] {
+    const aliasMap = alias || {}
+    return nativeHeaders.map(nativeHeader => {
+      if(aliasMap[nativeHeader]){
+        return aliasMap[nativeHeader]
+      }
+      return nativeHeader
+    })
+  }
+
+  public mapRowToSimpleObject<T>(row: string, headers: string[], delimiter = ","): T {
+    const splitRows = row.split(delimiter)
+    return splitRows.reduce((acc, rowItem, index) => {
+      acc[headers[index]] = rowItem 
       return acc
-    }, {}) as T
+    }, {} as any) as T
+  }
 }
 
-/**
- * 
- * @param filePath the filePath of csv
- * 
- * if filePath not is absolute, will search the file
- * starting the root folder.
- */
-export function getAbsolutePath(filePath: string): string {
-  if (!path.isAbsolute(filePath)){
-    return path.resolve(process.cwd(), filePath)
-  }
-  return filePath
-}
+export default new CSVReadUtil()

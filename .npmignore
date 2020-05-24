@@ -1,12 +1,12 @@
+.git
 __test__
 .vscode
+.github
 lib/
 node_modules/
-.github
-.git
+.eslintrc.js
 .gitignore
 index.ts
 jest.config.js
 tsconfig.json
 yarn.lock
-assets

@@ -16,10 +16,12 @@ jobs:
         with:
           fetch-depth: 0
       - name: Setup in NodeJS
-        uses: actions/setup-node@v1 # For init environment with nodejs
+        uses: actions/setup-node@v1
         with: 
           node-version: 12
       - name: Install dependencies
         run: yarn
       - name: Running all test
         run: yarn test
+      - name: Running lint
+        run: yarn lint

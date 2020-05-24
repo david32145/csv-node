@@ -1,8 +1,8 @@
-import CSVStreamReader from "./stream"
-import Pipeline, {PipelineFunction} from "~/lib/pipeline"
+import CSVStreamReader from './stream'
+import Pipeline, { PipelineFunction } from '~/lib/pipeline'
 
-import CSVReaderUtil from "./utils"
-import Filtered, {PredicateFunction, NextStrategy} from "~/lib/filtered"
+import CSVReaderUtil from './utils'
+import Filtered, { PredicateFunction, NextStrategy } from '~/lib/filtered'
 
 export interface ReadCSVOptions {
   alias?: {[property: string]: string}
@@ -15,32 +15,36 @@ export interface AliasMap {
   [property: string]: string
 }
 
-function SKIP_LINES_PREDICATE<T>(skipLineOption?: number): PredicateFunction<T> {
+function SKIP_LINES_PREDICATE<T> (skipLineOption?: number): PredicateFunction<T> {
   const skipLines = skipLineOption || 0
   return (data, linesReadable, currentLine) => {
-    if(currentLine <= skipLines) {
+    if (currentLine <= skipLines) {
       return NextStrategy.NEXT
     }
     return NextStrategy.PROCESS
   }
 }
 
-function LIMIT_PREDICATE<T>(limit?: number): PredicateFunction<T> {
+function LIMIT_PREDICATE<T> (limit?: number): PredicateFunction<T> {
   return (data, linesReadable) => {
-    if(limit && limit < linesReadable) {
+    if (limit && limit < linesReadable) {
       return NextStrategy.STOP
     }
     return NextStrategy.PROCESS
   }
 }
 
-function MAP_ALIAS_PIPELINE<T>(alias?: AliasMap): PipelineFunction<T> {
+function MAP_ALIAS_PIPELINE<T> (alias?: AliasMap): PipelineFunction<T> {
   return (data) => {
     const dataKeys = Object.keys(data)
     return dataKeys.reduce((acc, dataKey) => {
       let keyName = dataKey
-      if(alias?.[dataKey]) {
-        keyName = alias[dataKey]
+      if (alias) {
+        let i = 1
+        if (alias[dataKey]) {
+          keyName = alias[dataKey]
+          i++
+        }
       }
       acc[keyName] = (data as any)[dataKey]
       return acc
@@ -60,8 +64,8 @@ export default class CSVReader<T> {
   private filtered: Filtered<T>
 
   private static HEADER_LINE = 0
-  
-  public constructor(filePath: string, options?: ReadCSVOptions){
+
+  public constructor (filePath: string, options?: ReadCSVOptions) {
     this.filePath = CSVReaderUtil.getAbsolutePath(filePath)
     this.options = options || {}
     this.data = []
@@ -74,40 +78,37 @@ export default class CSVReader<T> {
     this.init()
   }
 
-  private init(): void {
+  private init (): void {
     this.pipeline.pipe(MAP_ALIAS_PIPELINE<T>(this.options.alias))
 
     this.filtered.addPredicate(SKIP_LINES_PREDICATE<T>(this.options.skipLines))
     this.filtered.addPredicate(LIMIT_PREDICATE<T>(this.options.limit))
   }
 
-  public async read(): Promise<T[]> {
+  public async read (): Promise<T[]> {
     await CSVStreamReader.readAsync(this.filePath, {
       onNextLine: (line) => {
-        if(this.currentRow === CSVReader.HEADER_LINE){
+        if (this.currentRow === CSVReader.HEADER_LINE) {
           this.processHeader(line)
           return true
         } else {
-          const simpleData = CSVReaderUtil.mapRowToSimpleObject<T>(line, this.headers)
+          const simpleData = CSVReaderUtil.mapRowToSimpleObject<T>(line, this.nativeHeaders)
           const pipeData: T = this.pipeline.process(simpleData)
           const filteredStatus = this.filtered.process(pipeData, this.readableRows, this.currentRow)
           return this.processData(filteredStatus, pipeData)
         }
-      },
-      onError: err => {
-        console.error(err)
       }
     })
 
     return this.data
   }
 
-  private processData(strategy: NextStrategy, newData: T): boolean {
-    if(strategy === NextStrategy.STOP){
+  private processData (strategy: NextStrategy, newData: T): boolean {
+    if (strategy === NextStrategy.STOP) {
       return false
     }
 
-    if(strategy === NextStrategy.NEXT) {
+    if (strategy === NextStrategy.NEXT) {
       this.nextLine()
       return true
     }
@@ -117,7 +118,7 @@ export default class CSVReader<T> {
     return true
   }
 
-  private processHeader(headerLine: string) {
+  private processHeader (headerLine: string) {
     this.nativeHeaders = CSVReaderUtil.splitHeader(headerLine, this.options.delimiter)
     this.headers = CSVReaderUtil.mapNativeHeaderToHeader(this.nativeHeaders, this.options.alias)
     this.consumerLine()
@@ -126,29 +127,27 @@ export default class CSVReader<T> {
   /**
    * Consume an line and increment readableRows and currentRow
    */
-  private consumerLine(): void {
+  private consumerLine (): void {
     this.readableRows = this.readableRows + 1
     this.nextLine()
-    
   }
 
   /**
    * Increment one line
    */
-  private nextLine(): void {
+  private nextLine (): void {
     this.currentRow = this.currentRow + 1
   }
 
-  
-  public get headersColumns(): string[] {
+  public get headersColumns (): string[] {
     return this.headers
   }
 
-  public get nativeHeadersColumns(): string[] {
+  public get nativeHeadersColumns (): string[] {
     return this.nativeHeaders
   }
-  
-  public get csvData(): T[]{
+
+  public get csvData (): T[] {
     return this.data
   }
 }

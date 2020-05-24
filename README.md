@@ -1,7 +1,7 @@
 # CSV Node
 
 <p align="center">
-  <img src="./assets/Logo.png" width="250" alt="Unform" />
+  <img src="./assets/Logo.png" width="250" alt="CSV Node" />
 </p>
 
 <h3 align="center"> 
@@ -10,7 +10,7 @@
 
 <div align="center">
 
-[![Actions Status](https://github.com/david32145/csv-node/workflows/csv-node-build/badge.svg)](https://github.com/david32145/csv-node/actions)
+[![Actions Status](https://github.com/david32145/csv-node/workflows/build/badge.svg)](https://github.com/david32145/csv-node/actions)
 
 </div>
 

@@ -4,19 +4,21 @@ import Pipeline, { PipelineFunction } from '~/lib/pipeline'
 import CSVReaderUtil from './utils'
 import Filtered, { PredicateFunction, NextStrategy } from '~/lib/filtered'
 
-export interface ReadCSVOptions {
+type FilterFunction<T> = (data: T, index: number) => boolean
+
+export interface ReadCSVOptions<T> {
   alias?: {[property: string]: string}
   skipLines?: number
   limit?: number
   delimiter?: string
+  filter?: FilterFunction<T>
 }
 
 export interface AliasMap {
   [property: string]: string
 }
 
-function SKIP_LINES_PREDICATE<T> (skipLineOption?: number): PredicateFunction<T> {
-  const skipLines = skipLineOption || 0
+function SKIP_LINES_PREDICATE<T> (skipLines: number): PredicateFunction<T> {
   return (data, linesReadable, currentLine) => {
     if (currentLine <= skipLines) {
       return NextStrategy.NEXT
@@ -25,12 +27,21 @@ function SKIP_LINES_PREDICATE<T> (skipLineOption?: number): PredicateFunction<T>
   }
 }
 
-function LIMIT_PREDICATE<T> (limit?: number): PredicateFunction<T> {
+function LIMIT_PREDICATE<T> (limit: number): PredicateFunction<T> {
   return (data, linesReadable) => {
-    if (limit && limit < linesReadable) {
+    if (limit < linesReadable) {
       return NextStrategy.STOP
     }
     return NextStrategy.PROCESS
+  }
+}
+
+function FILTER_PREDICATE<T> (filter: FilterFunction<T>): PredicateFunction<T> {
+  return (data, linesReadable, currentLine) => {
+    if (filter(data, currentLine)) {
+      return NextStrategy.PROCESS
+    }
+    return NextStrategy.NEXT
   }
 }
 
@@ -40,10 +51,8 @@ function MAP_ALIAS_PIPELINE<T> (alias?: AliasMap): PipelineFunction<T> {
     return dataKeys.reduce((acc, dataKey) => {
       let keyName = dataKey
       if (alias) {
-        let i = 1
         if (alias[dataKey]) {
           keyName = alias[dataKey]
-          i++
         }
       }
       acc[keyName] = (data as any)[dataKey]
@@ -54,7 +63,7 @@ function MAP_ALIAS_PIPELINE<T> (alias?: AliasMap): PipelineFunction<T> {
 
 export default class CSVReader<T> {
   private filePath: string
-  private options: ReadCSVOptions
+  private options: ReadCSVOptions<T>
   private data: T[]
   private currentRow: number
   private readableRows: number
@@ -65,7 +74,7 @@ export default class CSVReader<T> {
 
   private static HEADER_LINE = 0
 
-  public constructor (filePath: string, options?: ReadCSVOptions) {
+  public constructor (filePath: string, options?: ReadCSVOptions<T>) {
     this.filePath = CSVReaderUtil.getAbsolutePath(filePath)
     this.options = options || {}
     this.data = []
@@ -81,8 +90,15 @@ export default class CSVReader<T> {
   private init (): void {
     this.pipeline.pipe(MAP_ALIAS_PIPELINE<T>(this.options.alias))
 
-    this.filtered.addPredicate(SKIP_LINES_PREDICATE<T>(this.options.skipLines))
-    this.filtered.addPredicate(LIMIT_PREDICATE<T>(this.options.limit))
+    if (this.options.skipLines) {
+      this.filtered.addPredicate(SKIP_LINES_PREDICATE<T>(this.options.skipLines))
+    }
+    if (this.options.limit) {
+      this.filtered.addPredicate(LIMIT_PREDICATE<T>(this.options.limit))
+    }
+    if (this.options.filter) {
+      this.filtered.addPredicate(FILTER_PREDICATE<T>(this.options.filter))
+    }
   }
 
   public async read (): Promise<T[]> {

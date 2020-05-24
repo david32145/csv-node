@@ -296,4 +296,22 @@ describe('CSVReader basic', () => {
       )
     ]))
   })
+
+  test('It should be filter all persons with cod < 5', async () => {
+    const csvReader = new CSVReader<Person>(csvFileTest2, {
+      filter: (data) => data.id >= 5
+    })
+    const result = await csvReader.read()
+    expect(result.length).toBe(1) // max lines is 6
+    expect(csvReader.csvData).toEqual(expect.arrayContaining([
+      expect.objectContaining(
+        {
+          id: '5',
+          name: 'David5',
+          age: '19',
+          birthdate: '17-08-2000'
+        }
+      )
+    ]))
+  })
 })

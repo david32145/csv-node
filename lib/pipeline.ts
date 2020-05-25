@@ -1,5 +1,4 @@
-export type PipelineFunction<T> = (value: T, index: number) => T
-
+import { PipelineFunction } from './models'
 class Pipeline<T> {
   private pipelines: PipelineFunction<T> []
 

@@ -1,4 +1,4 @@
-import CSVStreamReader from '~/lib/stream'
+import CSVStreamReader from '../../lib/stream'
 import path from 'path'
 
 describe('Stream', () => {

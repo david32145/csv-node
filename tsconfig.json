@@ -1,19 +1,23 @@
 {
   "compilerOptions": {
-    "target": "es6",
-    "module": "ESNext",
+    "target": "ESNext",
+    "module": "AMD",
+    "allowJs": true,
     "outDir": "./dist",
+    "rootDir": "./",
     "strict": true,
+    "strictPropertyInitialization": false,
+    "moduleResolution": "node",
     "baseUrl": "./",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
     "declaration": true,
+    "forceConsistentCasingInFileNames": true,
     "paths": {
       "~/*": [
         "./*"
       ]
     },
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true
   },
   "include": [
     "lib/**/*",

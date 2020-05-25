@@ -1,0 +1,25 @@
+name: publish
+on:
+  create:
+    tag:
+      v*
+jobs:
+  npm-publish:
+    name: publish
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkuot on github repository
+        uses: actions/checkout@master # For checkout
+      - name: Setup in NodeJS
+        uses: actions/setup-node@master # For init environment with nodejs
+        with: 
+          node-version: 12
+          registry-url: 'https://registry.npmjs.org'
+      - name: Install dependencies
+        run: yarn
+      - name: Build project
+        run: yarn build
+      - name: Publish if version has been updated
+        run: yarn publish
+        env: 
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}

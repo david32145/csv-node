@@ -23,7 +23,7 @@ jobs:
         with:
           tag_name: "%s"
           tag_message: "%s"
-          commit_pattern: "*"
+          commit_pattern: "."
         env: # Variables for npm publish
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Automatic
           NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }} # You need to set this in your repo settings

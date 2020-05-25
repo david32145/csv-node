@@ -1,14 +1,4 @@
-export enum NextStrategy{
-  // Next row
-  NEXT,
-  // Stop the process of read
-  STOP,
-  // Process the row
-  PROCESS
-}
-
-export type PredicateFunction<T> = (value: T, linesReadable: number, currentLine: number) => NextStrategy
-
+import { PredicateFunction, NextStrategy } from './models'
 class Filtered<T> {
   private predicates: PredicateFunction<T> []
 

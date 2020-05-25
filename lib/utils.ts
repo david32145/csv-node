@@ -1,5 +1,5 @@
 import path from 'path'
-import { AliasMap } from './readCSV'
+import { AliasMap } from './models'
 
 class CSVReadUtil {
   /**

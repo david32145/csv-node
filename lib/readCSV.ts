@@ -1,22 +1,16 @@
 import CSVStreamReader from './stream'
-import Pipeline, { PipelineFunction } from './pipeline'
+import Pipeline from './pipeline'
 
 import CSVReaderUtil from './utils'
-import Filtered, { PredicateFunction, NextStrategy } from './filtered'
-
-type FilterFunction<T> = (data: T, index: number) => boolean
-
-export interface ReadCSVOptions<T> {
-  alias?: {[property: string]: string}
-  skipLines?: number
-  limit?: number
-  delimiter?: string
-  filter?: FilterFunction<T>
-}
-
-export interface AliasMap {
-  [property: string]: string
-}
+import Filtered from './filtered'
+import {
+  AliasMap,
+  FilterFunction,
+  ReadCSVOptions,
+  PipelineFunction,
+  PredicateFunction,
+  NextStrategy
+} from './models'
 
 function SKIP_LINES_PREDICATE<T> (skipLines: number): PredicateFunction<T> {
   return (data, linesReadable, currentLine) => {

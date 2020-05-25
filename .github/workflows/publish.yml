@@ -19,7 +19,7 @@ jobs:
       - name: Build project
         run: yarn build
       - name: Publish if version has been updated
-        uses: pascalgn/npm-publish-action # For deploy in npm
+        uses: pascalgn/npm-publish-action@4f4bf159e299f65d21cd1cbd96fc5d53228036df # For deploy in npm
         with:
           tag_name: "%s"
           tag_message: "%s"

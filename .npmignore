@@ -2,8 +2,9 @@
 __test__
 .vscode
 .github
-lib/
+./lib/
 node_modules/
+.eslintignore
 .eslintrc.js
 .gitignore
 index.ts

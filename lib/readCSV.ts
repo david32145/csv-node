@@ -1,8 +1,8 @@
 import CSVStreamReader from './stream'
-import Pipeline, { PipelineFunction } from '~/lib/pipeline'
+import Pipeline, { PipelineFunction } from './pipeline'
 
 import CSVReaderUtil from './utils'
-import Filtered, { PredicateFunction, NextStrategy } from '~/lib/filtered'
+import Filtered, { PredicateFunction, NextStrategy } from './filtered'
 
 type FilterFunction<T> = (data: T, index: number) => boolean
 

@@ -1,8 +1,8 @@
 name: publish
 on:
-  push:
-    branches:
-      - master
+  create:
+    tag:
+      v*
 jobs:
   npm-publish:
     name: publish

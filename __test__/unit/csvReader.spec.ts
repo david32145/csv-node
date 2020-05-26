@@ -46,6 +46,76 @@ describe('CSVReader basic', () => {
     expect(csvReader.nativeHeadersColumns).toStrictEqual(['id', 'name', 'age', 'birthdate'])
   })
 
+  test('It should be map rows as string', async () => {
+    const csvReader = new CSVReader<Person, string>(csvFileTest2, {
+      map: (data) => {
+        return `${data.id}-${data.name}`
+      }
+    })
+    await csvReader.read()
+    expect(csvReader.csvData).toEqual(expect.arrayContaining([
+      '0-David0',
+      '1-David1',
+      '2-David2',
+      '3-David3',
+      '4-David4',
+      '5-David5'
+    ]))
+  })
+
+  test('It should be map rows as string and skip one line', async () => {
+    const csvReader = new CSVReader<Person, string>(csvFileTest2, {
+      map: (data) => {
+        return `${data.id}-${data.name}`
+      },
+      skipLines: 1
+    })
+    await csvReader.read()
+    expect(csvReader.csvData).toEqual(expect.arrayContaining([
+      '1-David1',
+      '2-David2',
+      '3-David3',
+      '4-David4',
+      '5-David5'
+    ]))
+  })
+
+  test('It should be map rows as string and skip two line and limit at to 3 result', async () => {
+    const csvReader = new CSVReader<Person, string>(csvFileTest2, {
+      map: (data) => {
+        return `${data.id}-${data.name}`
+      },
+      skipLines: 2,
+      limit: 3
+    })
+    await csvReader.read()
+    expect(csvReader.csvData).toEqual(expect.arrayContaining([
+      '2-David2',
+      '3-David3',
+      '4-David4'
+    ]))
+  })
+
+  test('It should be map rows as string and skip two line and limit at to 3 result with alias', async () => {
+    type PersonT = Omit<Person, 'name'> & {Name: string}
+    const csvReader = new CSVReader<PersonT, string>(csvFileTest2, {
+      map: (data) => {
+        return `${data.id}-${data.Name}`
+      },
+      alias: {
+        name: 'Name'
+      },
+      skipLines: 2,
+      limit: 3
+    })
+    await csvReader.read()
+    expect(csvReader.csvData).toEqual(expect.arrayContaining([
+      '2-David2',
+      '3-David3',
+      '4-David4'
+    ]))
+  })
+
   test('It should be rename colunm name only', async () => {
     const csvReader = new CSVReader<Person>(csvFileTest2, {
       alias: {

@@ -39,36 +39,33 @@ function FILTER_PREDICATE<T> (filter: FilterFunction<T>): PredicateFunction<T> {
   }
 }
 
-function MAP_ALIAS_PIPELINE<T> (alias?: AliasMap): PipelineFunction<T> {
+function MAP_ALIAS_PIPELINE<T> (alias: AliasMap): PipelineFunction<T> {
   return (data) => {
     const dataKeys = Object.keys(data)
     return dataKeys.reduce((acc, dataKey) => {
       let keyName = dataKey
-      if (alias) {
-        if (alias[dataKey]) {
-          keyName = alias[dataKey]
-        }
+      if (alias[dataKey]) {
+        keyName = alias[dataKey]
       }
       acc[keyName] = (data as any)[dataKey]
       return acc
     }, {} as any) as T
   }
 }
-
-export default class CSVReader<T> {
+export default class CSVReader<T, E = T> {
   private filePath: string
-  private options: ReadCSVOptions<T>
-  private data: T[]
+  private options: ReadCSVOptions<T, E>
+  private data: E[]
   private currentRow: number
   private readableRows: number
   private headers: string[]
   private nativeHeaders: string[]
   private pipeline: Pipeline<T>
-  private filtered: Filtered<T>
+  private filtered: Filtered<E>
 
   private static HEADER_LINE = 0
 
-  public constructor (filePath: string, options?: ReadCSVOptions<T>) {
+  public constructor (filePath: string, options?: ReadCSVOptions<T, E>) {
     this.filePath = CSVReaderUtil.getAbsolutePath(filePath)
     this.options = options || {}
     this.data = []
@@ -82,20 +79,27 @@ export default class CSVReader<T> {
   }
 
   private init (): void {
-    this.pipeline.pipe(MAP_ALIAS_PIPELINE<T>(this.options.alias))
+    if (this.options.alias) {
+      this.pipeline.pipe(MAP_ALIAS_PIPELINE<T>(this.options.alias))
+    }
+
+    if (this.options.map) {
+      const map = this.options.map
+      this.pipeline.pipe((data, index) => map(data, index) as unknown as T)
+    }
 
     if (this.options.skipLines) {
-      this.filtered.addPredicate(SKIP_LINES_PREDICATE<T>(this.options.skipLines))
+      this.filtered.addPredicate(SKIP_LINES_PREDICATE<E>(this.options.skipLines))
     }
     if (this.options.limit) {
-      this.filtered.addPredicate(LIMIT_PREDICATE<T>(this.options.limit))
+      this.filtered.addPredicate(LIMIT_PREDICATE<E>(this.options.limit))
     }
     if (this.options.filter) {
-      this.filtered.addPredicate(FILTER_PREDICATE<T>(this.options.filter))
+      this.filtered.addPredicate(FILTER_PREDICATE<E>(this.options.filter))
     }
   }
 
-  public async read (): Promise<T[]> {
+  public async read (): Promise<E[]> {
     await CSVStreamReader.readAsync(this.filePath, {
       onNextLine: (line) => {
         if (this.currentRow === CSVReader.HEADER_LINE) {
@@ -103,17 +107,17 @@ export default class CSVReader<T> {
           return true
         } else {
           const simpleData = CSVReaderUtil.mapRowToSimpleObject<T>(line, this.nativeHeaders)
-          const pipeData: T = this.pipeline.process(simpleData)
+          const pipeData: E = this.pipeline.process(simpleData) as unknown as E
           const filteredStatus = this.filtered.process(pipeData, this.readableRows, this.currentRow)
           return this.processData(filteredStatus, pipeData)
         }
       }
     })
 
-    return this.data
+    return this.data as unknown as E[]
   }
 
-  private processData (strategy: NextStrategy, newData: T): boolean {
+  private processData (strategy: NextStrategy, newData: E): boolean {
     if (strategy === NextStrategy.STOP) {
       return false
     }
@@ -157,7 +161,7 @@ export default class CSVReader<T> {
     return this.nativeHeaders
   }
 
-  public get csvData (): T[] {
+  public get csvData (): E[] {
     return this.data
   }
 }

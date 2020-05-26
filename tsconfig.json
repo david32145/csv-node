@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "target": "ESNext",
-    "module": "AMD",
+    "module": "CommonJS",
     "allowJs": true,
     "outDir": "./dist",
     "rootDir": "./",

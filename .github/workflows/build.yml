@@ -22,6 +22,11 @@ jobs:
       - name: Install dependencies
         run: yarn
       - name: Running all test
-        run: yarn test
+        run: yarn test --coverage
       - name: Running lint
         run: yarn lint
+      - name: Coveralls
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path-to-lcov: __test__/coverage/lcov.info

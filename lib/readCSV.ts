@@ -99,7 +99,14 @@ export default class CSVReader<T, E = T> {
     }
   }
 
+  private resetMetaData (): void {
+    this.currentRow = 0
+    this.readableRows = 0
+  }
+
   public async read (): Promise<E[]> {
+    this.resetMetaData()
+    this.data = []
     await CSVStreamReader.readAsync(this.filePath, {
       onNextLine: (line) => {
         if (this.currentRow === CSVReader.HEADER_LINE) {
@@ -115,6 +122,82 @@ export default class CSVReader<T, E = T> {
     })
 
     return this.data as unknown as E[]
+  }
+
+  private async reduce<K> (acc: K | undefined, f: (acc: K | undefined, data: E, index: number) => K): Promise<K | undefined> {
+    this.resetMetaData()
+    await CSVStreamReader.readAsync(this.filePath, {
+      onNextLine: (line) => {
+        if (this.currentRow === CSVReader.HEADER_LINE) {
+          this.processHeader(line)
+          return true
+        } else {
+          const simpleData = CSVReaderUtil.mapRowToSimpleObject<T>(line, this.nativeHeaders)
+          const pipeData: E = this.pipeline.process(simpleData) as unknown as E
+          const filteredStatus = this.filtered.process(pipeData, this.readableRows, this.currentRow)
+          if (filteredStatus === NextStrategy.STOP) {
+            return false
+          }
+          if (filteredStatus === NextStrategy.NEXT) {
+            this.nextLine()
+            return true
+          }
+          this.consumerLine()
+          acc = f(acc, pipeData, this.currentRow)
+          return true
+        }
+      }
+    })
+    return acc
+  }
+
+  public async min (column: string): Promise<number | undefined> {
+    const min = await this.reduce<number>(undefined, (acc, data) => {
+      const currentValue = Number((data as any)[column])
+      if (acc) {
+        if (currentValue < acc) {
+          return currentValue
+        }
+
+        return acc
+      }
+      return currentValue
+    })
+    return min
+  }
+
+  public async max (column: string): Promise<number | undefined> {
+    const max = await this.reduce<number>(undefined, (acc, data) => {
+      const currentValue = Number((data as any)[column])
+      if (acc) {
+        if (currentValue > acc) {
+          return currentValue
+        }
+
+        return acc
+      }
+      return currentValue
+    })
+    return max
+  }
+
+  public async sum (column: string): Promise<number | undefined> {
+    const sum = await this.reduce<number>(undefined, (acc, data) => {
+      const currentValue = Number((data as any)[column])
+      if (acc) {
+        return acc + currentValue
+      }
+      return currentValue
+    })
+    return sum
+  }
+
+  public async avg (column: string): Promise<number | undefined> {
+    const sum = await this.sum(column)
+    if (sum) {
+      return sum / (this.readableRows - 1)
+    }
+    return undefined
   }
 
   private processData (strategy: NextStrategy, newData: E): boolean {

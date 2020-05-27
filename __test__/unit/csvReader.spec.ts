@@ -3,12 +3,19 @@ import CSVReader from '../../lib/readCSV'
 
 const csvFileTest = path.resolve(__dirname, '..', 'tmp', 'file.csv')
 const csvFileTest2 = path.resolve(__dirname, '..', 'tmp', 'file2.csv')
+const csvFileTest4 = path.resolve(__dirname, '..', 'tmp', 'file4.csv')
 
 interface Person {
   id: number
   name: string
   age: number
   birthdate: string
+}
+
+interface GenrePerson {
+  id: number
+  name: string
+  female: boolean
 }
 
 describe('CSVReader basic', () => {
@@ -60,6 +67,44 @@ describe('CSVReader basic', () => {
       '3-David3',
       '4-David4',
       '5-David5'
+    ]))
+  })
+
+  test('It should be cast numbers', async () => {
+    const csvReader = new CSVReader<Person>(csvFileTest2, {
+      limit: 1,
+      castNumbers: true
+    })
+    await csvReader.read()
+    expect(csvReader.csvData).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        id: 0,
+        name: 'David0',
+        age: 19,
+        birthdate: '17-08-2000'
+      })
+    ]))
+  })
+
+  test('It should be cast booleans and numbers', async () => {
+    const csvReader = new CSVReader<GenrePerson>(csvFileTest4, {
+      limit: 2,
+      castNumbers: true,
+      castBooleans: true
+    })
+    await csvReader.read()
+    expect(csvReader.csvData).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        id: 0,
+        name: 'David0',
+        female: true
+      }),
+
+      expect.objectContaining({
+        id: 1,
+        name: 'David1',
+        female: false
+      })
     ]))
   })
 

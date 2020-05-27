@@ -113,7 +113,7 @@ export default class CSVReader<T, E = T> {
           this.processHeader(line)
           return true
         } else {
-          const simpleData = CSVReaderUtil.mapRowToSimpleObject<T>(line, this.nativeHeaders)
+          const simpleData = CSVReaderUtil.mapRowToSimpleObject<T>(line, this.nativeHeaders, this.options.delimiter, this.options.castNumbers, this.options.castBooleans)
           const pipeData: E = this.pipeline.process(simpleData) as unknown as E
           const filteredStatus = this.filtered.process(pipeData, this.readableRows, this.currentRow)
           return this.processData(filteredStatus, pipeData)

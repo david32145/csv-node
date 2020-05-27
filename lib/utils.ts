@@ -51,10 +51,17 @@ class CSVReadUtil {
     })
   }
 
-  public mapRowToSimpleObject<T> (row: string, headers: string[], delimiter = ','): T {
+  public mapRowToSimpleObject<T> (row: string, headers: string[], delimiter = ',', castNumbers = false, castBooleans = false): T {
     const splitRows = row.split(delimiter)
     return splitRows.reduce((acc, rowItem, index) => {
-      acc[headers[index]] = rowItem
+      let value: any = rowItem
+      if (castNumbers && !isNaN(Number(rowItem))) {
+        value = Number(value)
+      }
+      if (castBooleans && (value === 'true' || value === 'false')) {
+        value = value === 'true'
+      }
+      acc[headers[index]] = value
       return acc
     }, {} as any) as T
   }

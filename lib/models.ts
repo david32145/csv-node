@@ -7,6 +7,8 @@ export interface ReadCSVOptions<T, E> {
   skipLines?: number
   limit?: number
   delimiter?: string
+  castNumbers?: boolean
+  castBooleans?: boolean
   filter?: FilterFunction<E>
   map?: MapFunction<T, E>
 }

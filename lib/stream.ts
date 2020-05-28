@@ -2,8 +2,12 @@ import fs from 'fs'
 import readline from 'readline'
 import { CSVNotFound } from './erros'
 
+interface CSVNextLineResult {
+  data: string
+}
+
 interface CSVStreamReaderOptions {
-  onNextLine: (line: string) => boolean,
+  onNextLine: (result: CSVNextLineResult) => boolean,
   onError?: (err: Error) => void | Error
 }
 
@@ -16,7 +20,7 @@ class CSVStreamReader {
     })
     return new Promise<void>((resolve, reject) => {
       lineStream.addListener('line', (line) => {
-        if (!opt.onNextLine(line)) {
+        if (!opt.onNextLine({ data: line })) {
           lineStream.close()
           resolve()
         }

@@ -30,7 +30,7 @@ describe('CSVReader basic', () => {
         birthdate: '17-08-2000'
       }
     ]))
-    expect(csvReader.headersColumns).toStrictEqual(['id', 'name', 'age', 'birthdate'])
+    expect(csvReader.headers).toStrictEqual(['id', 'name', 'age', 'birthdate'])
   })
 
   test('It should be throw an error if file not found', async () => {
@@ -49,8 +49,8 @@ describe('CSVReader basic', () => {
       }
     })
     await csvReader.read()
-    expect(csvReader.headersColumns).toStrictEqual(['Número', 'Nome', 'Idade', 'Data de Nascimento'])
-    expect(csvReader.nativeHeadersColumns).toStrictEqual(['id', 'name', 'age', 'birthdate'])
+    expect(csvReader.headers).toStrictEqual(['Número', 'Nome', 'Idade', 'Data de Nascimento'])
+    expect(csvReader.nativeHeaders).toStrictEqual(['id', 'name', 'age', 'birthdate'])
   })
 
   test('It should be map rows as string', async () => {
@@ -60,7 +60,7 @@ describe('CSVReader basic', () => {
       }
     })
     await csvReader.read()
-    expect(csvReader.csvData).toEqual(expect.arrayContaining([
+    expect(csvReader.data).toEqual(expect.arrayContaining([
       '0-David0',
       '1-David1',
       '2-David2',
@@ -76,7 +76,7 @@ describe('CSVReader basic', () => {
       castNumbers: true
     })
     await csvReader.read()
-    expect(csvReader.csvData).toEqual(expect.arrayContaining([
+    expect(csvReader.data).toEqual(expect.arrayContaining([
       expect.objectContaining({
         id: 0,
         name: 'David0',
@@ -93,7 +93,7 @@ describe('CSVReader basic', () => {
       castBooleans: true
     })
     await csvReader.read()
-    expect(csvReader.csvData).toEqual(expect.arrayContaining([
+    expect(csvReader.data).toEqual(expect.arrayContaining([
       expect.objectContaining({
         id: 0,
         name: 'David0',
@@ -116,7 +116,7 @@ describe('CSVReader basic', () => {
       skipLines: 1
     })
     await csvReader.read()
-    expect(csvReader.csvData).toEqual(expect.arrayContaining([
+    expect(csvReader.data).toEqual(expect.arrayContaining([
       '1-David1',
       '2-David2',
       '3-David3',
@@ -134,7 +134,7 @@ describe('CSVReader basic', () => {
       limit: 3
     })
     await csvReader.read()
-    expect(csvReader.csvData).toEqual(expect.arrayContaining([
+    expect(csvReader.data).toEqual(expect.arrayContaining([
       '2-David2',
       '3-David3',
       '4-David4'
@@ -154,7 +154,7 @@ describe('CSVReader basic', () => {
       limit: 3
     })
     await csvReader.read()
-    expect(csvReader.csvData).toEqual(expect.arrayContaining([
+    expect(csvReader.data).toEqual(expect.arrayContaining([
       '2-David2',
       '3-David3',
       '4-David4'
@@ -168,8 +168,8 @@ describe('CSVReader basic', () => {
       }
     })
     await csvReader.read()
-    expect(csvReader.headersColumns).toStrictEqual(['id', 'Name', 'age', 'birthdate'])
-    expect(csvReader.nativeHeadersColumns).toStrictEqual(['id', 'name', 'age', 'birthdate'])
+    expect(csvReader.headers).toStrictEqual(['id', 'Name', 'age', 'birthdate'])
+    expect(csvReader.nativeHeaders).toStrictEqual(['id', 'name', 'age', 'birthdate'])
   })
 
   test('It should be rename colunm age only', async () => {
@@ -179,8 +179,8 @@ describe('CSVReader basic', () => {
       }
     })
     await csvReader.read()
-    expect(csvReader.headersColumns).toStrictEqual(['id', 'name', 'Age', 'birthdate'])
-    expect(csvReader.nativeHeadersColumns).toStrictEqual(['id', 'name', 'age', 'birthdate'])
+    expect(csvReader.headers).toStrictEqual(['id', 'name', 'Age', 'birthdate'])
+    expect(csvReader.nativeHeaders).toStrictEqual(['id', 'name', 'age', 'birthdate'])
   })
 
   test('It should be skip 3 lines', async () => {
@@ -189,7 +189,7 @@ describe('CSVReader basic', () => {
     })
     const result = await csvReader.read()
     expect(result.length).toBe(3)
-    expect(csvReader.csvData).toEqual(expect.arrayContaining([
+    expect(csvReader.data).toEqual(expect.arrayContaining([
       expect.objectContaining(
         {
           id: '3',
@@ -223,7 +223,7 @@ describe('CSVReader basic', () => {
     })
     const result = await csvReader.read()
     expect(result.length).toBe(5)
-    expect(csvReader.csvData).toEqual(expect.arrayContaining([
+    expect(csvReader.data).toEqual(expect.arrayContaining([
       expect.objectContaining(
         {
           id: '1',
@@ -273,7 +273,7 @@ describe('CSVReader basic', () => {
     })
     const result = await csvReader.read()
     expect(result.length).toBe(2)
-    expect(csvReader.csvData).toEqual(expect.arrayContaining([
+    expect(csvReader.data).toEqual(expect.arrayContaining([
       expect.objectContaining(
         {
           id: '4',
@@ -299,7 +299,7 @@ describe('CSVReader basic', () => {
     })
     const result = await csvReader.read()
     expect(result.length).toBe(0)
-    expect(csvReader.csvData).toEqual(expect.arrayContaining([]))
+    expect(csvReader.data).toEqual(expect.arrayContaining([]))
   })
 
   test('It should be limit the result in 3 results', async () => {
@@ -309,7 +309,7 @@ describe('CSVReader basic', () => {
     })
     const result = await csvReader.read()
     expect(result.length).toBe(3)
-    expect(csvReader.csvData).toEqual(expect.arrayContaining([
+    expect(csvReader.data).toEqual(expect.arrayContaining([
       expect.objectContaining(
         {
           id: '1',
@@ -343,7 +343,7 @@ describe('CSVReader basic', () => {
     })
     const result = await csvReader.read()
     expect(result.length).toBe(1)
-    expect(csvReader.csvData).toEqual(expect.arrayContaining([
+    expect(csvReader.data).toEqual(expect.arrayContaining([
       expect.objectContaining(
         {
           id: '0',
@@ -360,7 +360,7 @@ describe('CSVReader basic', () => {
     })
     const result = await csvReader.read()
     expect(result.length).toBe(6) // max lines is 6
-    expect(csvReader.csvData).toEqual(expect.arrayContaining([
+    expect(csvReader.data).toEqual(expect.arrayContaining([
       expect.objectContaining(
         {
           id: '0',
@@ -418,7 +418,7 @@ describe('CSVReader basic', () => {
     })
     const result = await csvReader.read()
     expect(result.length).toBe(1) // max lines is 6
-    expect(csvReader.csvData).toEqual(expect.arrayContaining([
+    expect(csvReader.data).toEqual(expect.arrayContaining([
       expect.objectContaining(
         {
           id: '5',

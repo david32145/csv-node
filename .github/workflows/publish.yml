@@ -1,24 +1,33 @@
 name: publish
 on:
-  create:
-    tag:
-      v*
+  push:
+    branch:
+      - master
 jobs:
   npm-publish:
     name: publish
     runs-on: ubuntu-latest
     steps:
       - name: Checkuot on github repository
-        uses: actions/checkout@master # For checkout
+        uses: actions/checkout@master
       - name: Setup in NodeJS
-        uses: actions/setup-node@master # For init environment with nodejs
+        uses: actions/setup-node@master
         with: 
           node-version: 12
           registry-url: 'https://registry.npmjs.org'
       - name: Install dependencies
         run: yarn
-      - name: Build project
+      - name: Build typescript project
         run: yarn build
+      - name: Running all test and collect coverage
+        run: yarn test --coverage
+      - name: Running lint check
+        run: yarn lint
+      - name: Send coverage to Coveralls
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path-to-lcov: __test__/coverage/lcov.info
       - name: Publish if version has been updated
         run: yarn publish
         env: 

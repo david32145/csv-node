@@ -2,10 +2,10 @@ name: build
 on:
   pull_request:
     branches:
-      - master
+      - development
   push:
     branches:
-      - master
+      - development
 jobs:
   build-project:
     name: build-project
@@ -21,11 +21,11 @@ jobs:
           node-version: 12
       - name: Install dependencies
         run: yarn
-      - name: Running all test
+      - name: Running all test and collect coverage
         run: yarn test --coverage
-      - name: Running lint
+      - name: Running lint check
         run: yarn lint
-      - name: Coveralls
+      - name: Send data to Coveralls
         uses: coverallsapp/github-action@master
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}

@@ -53,88 +53,88 @@ function MAP_ALIAS_PIPELINE<T> (alias: AliasMap): PipelineFunction<T> {
   }
 }
 export default class CSVReader<T, E = T> {
-  private filePath: string
-  private options: ReadCSVOptions<T, E>
-  private data: E[]
-  private currentRow: number
-  private readableRows: number
-  private headers: string[]
-  private nativeHeaders: string[]
-  private pipeline: Pipeline<T>
-  private filtered: Filtered<E>
+  private _filePath: string
+  private _options: ReadCSVOptions<T, E>
+  private _data: E[]
+  private _currentRow: number
+  private _readableRows: number
+  private _headers: string[]
+  private _nativeHeaders: string[]
+  private _pipeline: Pipeline<T>
+  private _filtered: Filtered<E>
 
-  private static HEADER_LINE = 0
+  private static _HEADER_LINE = 0
 
   public constructor (filePath: string, options?: ReadCSVOptions<T, E>) {
-    this.filePath = CSVReaderUtil.getAbsolutePath(filePath)
-    this.options = options || {}
-    this.data = []
-    this.currentRow = 0
-    this.readableRows = 0
-    this.headers = []
-    this.nativeHeaders = []
-    this.pipeline = new Pipeline()
-    this.filtered = new Filtered()
+    this._filePath = CSVReaderUtil.getAbsolutePath(filePath)
+    this._options = options || {}
+    this._data = []
+    this._currentRow = 0
+    this._readableRows = 0
+    this._headers = []
+    this._nativeHeaders = []
+    this._pipeline = new Pipeline()
+    this._filtered = new Filtered()
     this.init()
   }
 
   private init (): void {
-    if (this.options.alias) {
-      this.pipeline.pipe(MAP_ALIAS_PIPELINE<T>(this.options.alias))
+    if (this._options.alias) {
+      this._pipeline.pipe(MAP_ALIAS_PIPELINE<T>(this._options.alias))
     }
 
-    if (this.options.map) {
-      const map = this.options.map
-      this.pipeline.pipe((data, index) => map(data, index) as unknown as T)
+    if (this._options.map) {
+      const map = this._options.map
+      this._pipeline.pipe((data, index) => map(data, index) as unknown as T)
     }
 
-    if (this.options.skipLines) {
-      this.filtered.addPredicate(SKIP_LINES_PREDICATE<E>(this.options.skipLines))
+    if (this._options.skipLines) {
+      this._filtered.addPredicate(SKIP_LINES_PREDICATE<E>(this._options.skipLines))
     }
-    if (this.options.limit) {
-      this.filtered.addPredicate(LIMIT_PREDICATE<E>(this.options.limit))
+    if (this._options.limit) {
+      this._filtered.addPredicate(LIMIT_PREDICATE<E>(this._options.limit))
     }
-    if (this.options.filter) {
-      this.filtered.addPredicate(FILTER_PREDICATE<E>(this.options.filter))
+    if (this._options.filter) {
+      this._filtered.addPredicate(FILTER_PREDICATE<E>(this._options.filter))
     }
   }
 
   private resetMetaData (): void {
-    this.currentRow = 0
-    this.readableRows = 0
+    this._currentRow = 0
+    this._readableRows = 0
   }
 
   public async read (): Promise<E[]> {
     this.resetMetaData()
-    this.data = []
-    await CSVStreamReader.readAsync(this.filePath, {
-      onNextLine: (line) => {
-        if (this.currentRow === CSVReader.HEADER_LINE) {
-          this.processHeader(line)
+    this._data = []
+    await CSVStreamReader.readAsync(this._filePath, {
+      onNextLine: ({ data }) => {
+        if (this._currentRow === CSVReader._HEADER_LINE) {
+          this.processHeader(data)
           return true
         } else {
-          const simpleData = CSVReaderUtil.mapRowToSimpleObject<T>(line, this.nativeHeaders, this.options.delimiter, this.options.castNumbers, this.options.castBooleans)
-          const pipeData: E = this.pipeline.process(simpleData) as unknown as E
-          const filteredStatus = this.filtered.process(pipeData, this.readableRows, this.currentRow)
+          const simpleData = CSVReaderUtil.mapRowToSimpleObject<T>(data, this._nativeHeaders, this._options.delimiter, this._options.castNumbers, this._options.castBooleans)
+          const pipeData: E = this._pipeline.process(simpleData) as unknown as E
+          const filteredStatus = this._filtered.process(pipeData, this._readableRows, this._currentRow)
           return this.processData(filteredStatus, pipeData)
         }
       }
     })
 
-    return this.data as unknown as E[]
+    return this._data as unknown as E[]
   }
 
   private async reduce<K> (acc: K | undefined, f: (acc: K | undefined, data: E, index: number) => K): Promise<K | undefined> {
     this.resetMetaData()
-    await CSVStreamReader.readAsync(this.filePath, {
-      onNextLine: (line) => {
-        if (this.currentRow === CSVReader.HEADER_LINE) {
-          this.processHeader(line)
+    await CSVStreamReader.readAsync(this._filePath, {
+      onNextLine: ({ data }) => {
+        if (this._currentRow === CSVReader._HEADER_LINE) {
+          this.processHeader(data)
           return true
         } else {
-          const simpleData = CSVReaderUtil.mapRowToSimpleObject<T>(line, this.nativeHeaders)
-          const pipeData: E = this.pipeline.process(simpleData) as unknown as E
-          const filteredStatus = this.filtered.process(pipeData, this.readableRows, this.currentRow)
+          const simpleData = CSVReaderUtil.mapRowToSimpleObject<T>(data, this._nativeHeaders)
+          const pipeData: E = this._pipeline.process(simpleData) as unknown as E
+          const filteredStatus = this._filtered.process(pipeData, this._readableRows, this._currentRow)
           if (filteredStatus === NextStrategy.STOP) {
             return false
           }
@@ -143,7 +143,7 @@ export default class CSVReader<T, E = T> {
             return true
           }
           this.consumerLine()
-          acc = f(acc, pipeData, this.currentRow)
+          acc = f(acc, pipeData, this._currentRow)
           return true
         }
       }
@@ -151,6 +151,12 @@ export default class CSVReader<T, E = T> {
     return acc
   }
 
+  /**
+   *
+   * @param {string} column column to be calculate min
+   *
+   * @returns the min of an column with *options* passed in constructor
+   */
   public async min (column: string): Promise<number | undefined> {
     const min = await this.reduce<number>(undefined, (acc, data) => {
       const currentValue = Number((data as any)[column])
@@ -166,6 +172,12 @@ export default class CSVReader<T, E = T> {
     return min
   }
 
+  /**
+   *
+   * @param {string} column column to be calculate max
+   *
+   * @returns the max of an column with *options* passed in constructor
+   */
   public async max (column: string): Promise<number | undefined> {
     const max = await this.reduce<number>(undefined, (acc, data) => {
       const currentValue = Number((data as any)[column])
@@ -181,6 +193,12 @@ export default class CSVReader<T, E = T> {
     return max
   }
 
+  /**
+   *
+   * @param {string} column column to be calculate sum
+   *
+   * @returns the sum of an column with *options* passed in constructor
+   */
   public async sum (column: string): Promise<number | undefined> {
     const sum = await this.reduce<number>(undefined, (acc, data) => {
       const currentValue = Number((data as any)[column])
@@ -192,14 +210,30 @@ export default class CSVReader<T, E = T> {
     return sum
   }
 
+  /**
+   *
+   * @param {string} column column to be calculate avg
+   *
+   * @returns the average of an column with *options* passed in constructor
+   */
   public async avg (column: string): Promise<number | undefined> {
     const sum = await this.sum(column)
     if (sum) {
-      return sum / (this.readableRows - 1)
+      return sum / (this._readableRows - 1)
     }
     return undefined
   }
 
+  /**
+   *
+   * @param {NextStrategy} strategy how process data
+   * @param {E} newData new item
+   *
+   * if strategy is for stop, the reader is stoper,
+   * if strategy is for next, so skip this line,
+   *
+   * else, so consumer this line and add *newData* to *_data*
+   */
   private processData (strategy: NextStrategy, newData: E): boolean {
     if (strategy === NextStrategy.STOP) {
       return false
@@ -210,14 +244,20 @@ export default class CSVReader<T, E = T> {
       return true
     }
 
-    this.data.push(newData)
+    this._data.push(newData)
     this.consumerLine()
     return true
   }
 
+  /**
+   *
+   * @param {string} headerLine is the header of csv table like string
+   *
+   * Process the header and fill the variable *_headers*
+   */
   private processHeader (headerLine: string) {
-    this.nativeHeaders = CSVReaderUtil.splitHeader(headerLine, this.options.delimiter)
-    this.headers = CSVReaderUtil.mapNativeHeaderToHeader(this.nativeHeaders, this.options.alias)
+    this._nativeHeaders = CSVReaderUtil.splitHeader(headerLine, this._options.delimiter)
+    this._headers = CSVReaderUtil.mapNativeHeaderToHeader(this._nativeHeaders, this._options.alias)
     this.consumerLine()
   }
 
@@ -225,7 +265,7 @@ export default class CSVReader<T, E = T> {
    * Consume an line and increment readableRows and currentRow
    */
   private consumerLine (): void {
-    this.readableRows = this.readableRows + 1
+    this._readableRows = this._readableRows + 1
     this.nextLine()
   }
 
@@ -233,18 +273,32 @@ export default class CSVReader<T, E = T> {
    * Increment one line
    */
   private nextLine (): void {
-    this.currentRow = this.currentRow + 1
+    this._currentRow = this._currentRow + 1
   }
 
-  public get headersColumns (): string[] {
-    return this.headers
+  /**
+   * Getter for *headers*
+   */
+  public get headers (): string[] {
+    return this._headers
   }
 
-  public get nativeHeadersColumns (): string[] {
-    return this.nativeHeaders
+  /**
+   * Getter for *nativeHeaders*
+   *
+   * *nativeHeaders* is the original headers in
+   * csv table.
+   */
+  public get nativeHeaders (): string[] {
+    return this._nativeHeaders
   }
 
-  public get csvData (): E[] {
-    return this.data
+  /**
+   * Getter for *data*
+   *
+   * *data* is the rows as javascript object.
+   */
+  public get data (): E[] {
+    return this._data
   }
 }

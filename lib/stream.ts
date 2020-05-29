@@ -11,7 +11,31 @@ interface CSVStreamReaderOptions {
   onError?: (err: Error) => void | Error
 }
 
+async function writeAsync (stream: fs.WriteStream, data: string): Promise<void> {
+  return new Promise<void>((resolve, reject) => {
+    stream.write(data, err => {
+      if (err) {
+        reject(err)
+        return
+      }
+      resolve()
+    })
+  })
+}
+
 class CSVStreamReader {
+  public async writeAsync (filePath: string, rows: Record<string, unknown>[], header: string[], delimiter = ','): Promise<void> {
+    const writeStream = fs.createWriteStream(filePath)
+    const headerRow = header.join(delimiter) + '\n'
+    await writeAsync(writeStream, headerRow)
+    await Promise.all(rows.map(async row => {
+      const values = Object.values<unknown>(row)
+      await writeAsync(writeStream, values.join(delimiter) + '\n')
+    }))
+
+    writeStream.close()
+  }
+
   public async readAsync (filePath: string, opt: CSVStreamReaderOptions): Promise<void> {
     const fileStream = fs.createReadStream(filePath)
     const lineStream = readline.createInterface({

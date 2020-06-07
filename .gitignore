@@ -1,5 +1,6 @@
 __test__/coverage/*
 !__test__/coverage/.gitkeep
+__test__/tmp/file5.csv
 .vscode
 node_modules
 yarn.lock

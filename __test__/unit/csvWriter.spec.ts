@@ -1,4 +1,4 @@
-import CSVWriter from '../../lib/csvWriter'
+import CSVWriter from '../../lib/writerCSV'
 import fs from 'fs'
 import path from 'path'
 

@@ -1,6 +1,6 @@
 {
   "name": "csv-node",
-  "version": "1.3.0",
+  "version": "1.3.2",
   "description": "An parser for csv files",
   "main": "./dist/index.js",
   "keywords": ["NodeJS", "csv", "read", "parser", "typescript", "promise"],

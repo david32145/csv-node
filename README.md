@@ -248,7 +248,7 @@ Output.
 
 #### Delimiter
 
-Not work.
+This is delimiter between colunms.
 
 #### Filter
 
@@ -310,9 +310,9 @@ The `CSVReader` class provide the methods and fields bellow.
 
 |name|description|type|
 |:-----|:-----|:---:|
-|headersColumns|The headers columns with alias|`string []`|
-|nativeHeadersColumns|The real headers of csv table|`string []`|
-|csvData|The data of csv|`T[]`|
+|headers|The headers columns with alias|`string []`|
+|nativeHeaders|The real headers of csv table|`string []`|
+|data|The data of csv|`T[]`|
 
 All fields only is available before call function `read`.
 
@@ -394,6 +394,51 @@ async function loadCsv() {
   console.log(sum)
 }
 // 49492.76999999994
+```
+
+## CSVWriter API
+
+### Fields
+
+|name|description|type|
+|:-----|:-----|:---:|
+|headers|The headers of columns|`string []`|
+|delimiter|The delimiter between colunms|`string`|
+
+The first parameter of CSVWriter is the destination file, the second is an object, que contains the headers columns of the csv file and `delimiter`.
+
+### Methods
+
+|name|description|return|
+|:-----|:-----|:---:|
+|`writer(data: object)`|Write the object in csv|`Promise<void>`|
+
+
+```js
+async function writeCsv() {
+  const writer = new CSVWriter(file, {
+    headers: ['name', 'age']
+  })
+  const data = [
+    { name: 'David0', age: '18' },
+    { name: 'David1', age: '18' },
+    { name: 'David2', age: '18' },
+    { name: 'David3', age: '18' },
+    { name: 'David4', age: '18' }
+  ]
+
+  await writer.write(data)
+}
+// write an like
+```
+
+```csv
+name,age
+David0,18
+David1,18
+David2,18
+David3,18
+David4,18
 ```
 
 ## Typescript Support

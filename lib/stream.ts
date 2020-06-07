@@ -12,14 +12,8 @@ interface CSVStreamReaderOptions {
 }
 
 async function writeAsync (stream: fs.WriteStream, data: string): Promise<void> {
-  return new Promise<void>((resolve, reject) => {
-    stream.write(data, err => {
-      if (err) {
-        reject(err)
-        return
-      }
-      resolve()
-    })
+  return new Promise<void>((resolve) => {
+    stream.write(data, () => resolve())
   })
 }
 

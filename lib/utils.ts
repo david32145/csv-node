@@ -1,7 +1,7 @@
 import path from 'path'
 import { AliasMap } from './models'
 
-class CSVReadUtil {
+class CSVUtil {
   /**
   *
   * @param {string} filePath the filePath of csv
@@ -67,4 +67,4 @@ class CSVReadUtil {
   }
 }
 
-export default new CSVReadUtil()
+export default new CSVUtil()

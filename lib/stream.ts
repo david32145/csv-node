@@ -1,12 +1,14 @@
 import fs from 'fs'
 import readline from 'readline'
-import { CSVNotFound } from './erros'
+import CSVNotFound from './erros/CSVNotFound'
 
-interface CSVNextLineResult {
+import { CSVWriterOptions } from './models'
+
+export interface CSVNextLineResult {
   data: string
 }
 
-interface CSVStreamReaderOptions {
+interface CSVStreamOptions {
   onNextLine: (result: CSVNextLineResult) => boolean,
   onError?: (err: Error) => void | Error
 }
@@ -17,20 +19,33 @@ async function writeAsync (stream: fs.WriteStream, data: string): Promise<void> 
   })
 }
 
-class CSVStreamReader {
-  public async writeAsync (filePath: string, rows: Record<string, unknown>[], header: string[], delimiter = ','): Promise<void> {
+type CSVEntry<T> = [keyof T, T[keyof T]][]
+
+class CSVStream {
+  public async writeAsync<T> (filePath: string, rows: T[], {
+    headers,
+    delimiter = ',',
+    format = {}
+  }: CSVWriterOptions<T>): Promise<void> {
     const writeStream = fs.createWriteStream(filePath)
-    const headerRow = header.join(delimiter) + '\n'
+    const headerRow = headers.join(delimiter) + '\n'
     await writeAsync(writeStream, headerRow)
     await Promise.all(rows.map(async row => {
-      const values = Object.values<unknown>(row)
-      await writeAsync(writeStream, values.join(delimiter) + '\n')
+      const entries = Object.entries(row) as unknown as CSVEntry<T>
+      const mapValues = entries.map((entry) => {
+        const formatFunction = format[entry[0]]
+        if (formatFunction) {
+          return formatFunction(entry[1])
+        }
+        return String(entry[1])
+      })
+      await writeAsync(writeStream, mapValues.join(delimiter) + '\n')
     }))
 
     writeStream.close()
   }
 
-  public async readAsync (filePath: string, opt: CSVStreamReaderOptions): Promise<void> {
+  public async readAsync (filePath: string, opt: CSVStreamOptions): Promise<void> {
     const fileStream = fs.createReadStream(filePath)
     const lineStream = readline.createInterface({
       input: fileStream,
@@ -53,4 +68,4 @@ class CSVStreamReader {
   }
 }
 
-export default new CSVStreamReader()
+export default new CSVStream()

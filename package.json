@@ -33,7 +33,7 @@
     "test": "jest",
     "test:coverage": "jest --coverage",
     "build": "rm -rf ./dist && tsc --build",
-    "publish": "",
+    "publish": "npm publish",
     "lint": "yarn eslint . --ext .ts,.js",
     "lint:fix": "yarn eslint . --ext .ts,.js --fix"
   }

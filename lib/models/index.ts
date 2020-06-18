@@ -27,9 +27,14 @@ export enum NextStrategy{
 }
 
 export interface CSVWriterOptions<T>{
-  headers: string[]
+  headers: {
+    [P in keyof T]: string
+  }
   delimiter?: string
   format?: Partial<{
     [P in keyof T]: (value: T[P]) => string
+  }>
+  defaultValue?: Partial<{
+    [P in keyof T]: string
   }>
 }

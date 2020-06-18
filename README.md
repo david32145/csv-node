@@ -798,7 +798,7 @@ You must provide the headers that will writer in csv file, you can rename column
 
 ```js
 const path = require("path")
-const { CSVWriter } = require("../../dist")
+const { CSVWriter } = require("csv-node")
 
 const fileName = path.resolve(__dirname, "output.csv")
 
@@ -829,7 +829,7 @@ loadCsv()
 
 ```ts
 import path from "path"
-import { CSVWriter } from "../../dist"
+import { CSVWriter } from "csv-node"
 
 const fileName = path.resolve(__dirname, "output.csv")
 
@@ -883,7 +883,7 @@ The option is for apply an function before save, for example if object contain `
 
 ```js
 const path = require("path")
-const { CSVWriter } = require("../../dist")
+const { CSVWriter } = require("csv-node")
 
 const fileName = path.resolve(__dirname, "output.csv")
 
@@ -917,7 +917,7 @@ loadCsv()
 
 ```ts
 import path from "path"
-import { CSVWriter } from "../../dist"
+import { CSVWriter } from "csv-node"
 
 const fileName = path.resolve(__dirname, "output.csv")
 
@@ -970,7 +970,7 @@ The option is for add fallback value if object not contains the column. The defa
 
 ```js
 const path = require("path")
-const { CSVWriter } = require("../../dist")
+const { CSVWriter } = require("csv-node")
 
 const fileName = path.resolve(__dirname, "output.csv")
 
@@ -1005,7 +1005,7 @@ loadCsv()
 
 ```ts
 import path  from "path"
-import { CSVWriter } from "../../dist"
+import { CSVWriter } from "csv-node"
 
 const fileName = path.resolve(__dirname, "output.csv")
 

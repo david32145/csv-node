@@ -1,60 +1,24 @@
-import CSVStreamReader from './stream'
-import Pipeline from './pipeline'
+import CSVStream, { CSVNextLineResult } from '../stream'
+import Pipeline from '../pipeline'
 
-import CSVReaderUtil from './utils'
-import Filtered from './filtered'
+import CSVUtil from '../utils'
+import Filtered from '../filtered'
+
 import {
-  AliasMap,
-  FilterFunction,
-  ReadCSVOptions,
-  PipelineFunction,
-  PredicateFunction,
+  CSVReadOptions,
   NextStrategy
-} from './models'
+} from '../models'
 
-function SKIP_LINES_PREDICATE<T> (skipLines: number): PredicateFunction<T> {
-  return (data, linesReadable, currentLine) => {
-    if (currentLine <= skipLines) {
-      return NextStrategy.NEXT
-    }
-    return NextStrategy.PROCESS
-  }
-}
+import {
+  FILTER_PREDICATE,
+  LIMIT_PREDICATE,
+  MAP_ALIAS_PIPELINE,
+  SKIP_LINES_PREDICATE
+} from './util'
 
-function LIMIT_PREDICATE<T> (limit: number): PredicateFunction<T> {
-  return (data, linesReadable) => {
-    if (limit < linesReadable) {
-      return NextStrategy.STOP
-    }
-    return NextStrategy.PROCESS
-  }
-}
-
-function FILTER_PREDICATE<T> (filter: FilterFunction<T>): PredicateFunction<T> {
-  return (data, linesReadable, currentLine) => {
-    if (filter(data, currentLine)) {
-      return NextStrategy.PROCESS
-    }
-    return NextStrategy.NEXT
-  }
-}
-
-function MAP_ALIAS_PIPELINE<T> (alias: AliasMap): PipelineFunction<T> {
-  return (data) => {
-    const dataKeys = Object.keys(data)
-    return dataKeys.reduce((acc, dataKey) => {
-      let keyName = dataKey
-      if (alias[dataKey]) {
-        keyName = alias[dataKey]
-      }
-      acc[keyName] = (data as any)[dataKey]
-      return acc
-    }, {} as any) as T
-  }
-}
 export default class CSVReader<T, E = T> {
   private _filePath: string
-  private _options: ReadCSVOptions<T, E>
+  private _options: CSVReadOptions<T, E>
   private _data: E[]
   private _currentRow: number
   private _readableRows: number
@@ -65,8 +29,8 @@ export default class CSVReader<T, E = T> {
 
   private static _HEADER_LINE = 0
 
-  public constructor (filePath: string, options?: ReadCSVOptions<T, E>) {
-    this._filePath = CSVReaderUtil.getAbsolutePath(filePath)
+  public constructor (filePath: string, options?: CSVReadOptions<T, E>) {
+    this._filePath = CSVUtil.getAbsolutePath(filePath)
     this._options = options || {}
     this._data = []
     this._currentRow = 0
@@ -107,32 +71,33 @@ export default class CSVReader<T, E = T> {
   public async read (): Promise<E[]> {
     this.resetMetaData()
     this._data = []
-    await CSVStreamReader.readAsync(this._filePath, {
-      onNextLine: ({ data }) => {
-        if (this._currentRow === CSVReader._HEADER_LINE) {
-          this.processHeader(data)
-          return true
-        } else {
-          const simpleData = CSVReaderUtil.mapRowToSimpleObject<T>(data, this._nativeHeaders, this._options.delimiter, this._options.castNumbers, this._options.castBooleans)
-          const pipeData: E = this._pipeline.process(simpleData) as unknown as E
-          const filteredStatus = this._filtered.process(pipeData, this._readableRows, this._currentRow)
-          return this.processData(filteredStatus, pipeData)
-        }
-      }
+    await CSVStream.readAsync(this._filePath, {
+      onNextLine: this.readCallback.bind(this)
     })
-
     return this._data as unknown as E[]
+  }
+
+  private readCallback ({ data }: CSVNextLineResult): boolean {
+    if (this._currentRow === CSVReader._HEADER_LINE) {
+      this.processHeader(data)
+      return true
+    } else {
+      const simpleData = CSVUtil.mapRowToSimpleObject<T>(data, this._nativeHeaders, this._options.delimiter, this._options.castNumbers, this._options.castBooleans)
+      const pipeData: E = this._pipeline.process(simpleData) as unknown as E
+      const filteredStatus = this._filtered.process(pipeData, this._readableRows, this._currentRow)
+      return this.processData(filteredStatus, pipeData)
+    }
   }
 
   private async reduce<K> (acc: K | undefined, f: (acc: K | undefined, data: E, index: number) => K): Promise<K | undefined> {
     this.resetMetaData()
-    await CSVStreamReader.readAsync(this._filePath, {
+    await CSVStream.readAsync(this._filePath, {
       onNextLine: ({ data }) => {
         if (this._currentRow === CSVReader._HEADER_LINE) {
           this.processHeader(data)
           return true
         } else {
-          const simpleData = CSVReaderUtil.mapRowToSimpleObject<T>(data, this._nativeHeaders)
+          const simpleData = CSVUtil.mapRowToSimpleObject<T>(data, this._nativeHeaders)
           const pipeData: E = this._pipeline.process(simpleData) as unknown as E
           const filteredStatus = this._filtered.process(pipeData, this._readableRows, this._currentRow)
           if (filteredStatus === NextStrategy.STOP) {
@@ -256,8 +221,8 @@ export default class CSVReader<T, E = T> {
    * Process the header and fill the variable *_headers*
    */
   private processHeader (headerLine: string) {
-    this._nativeHeaders = CSVReaderUtil.splitHeader(headerLine, this._options.delimiter)
-    this._headers = CSVReaderUtil.mapNativeHeaderToHeader(this._nativeHeaders, this._options.alias)
+    this._nativeHeaders = CSVUtil.splitHeader(headerLine, this._options.delimiter)
+    this._headers = CSVUtil.mapNativeHeaderToHeader(this._nativeHeaders, this._options.alias)
     this.consumerLine()
   }
 

@@ -2,7 +2,7 @@ export type FilterFunction<T> = (data: T, index: number) => boolean
 export type PipelineFunction<T> = (value: T, index: number) => T
 export type PredicateFunction<T> = (value: T, linesReadable: number, currentLine: number) => NextStrategy
 export type MapFunction<T, E> = (value: T, index: number) => E
-export interface ReadCSVOptions<T, E> {
+export interface CSVReadOptions<T, E> {
   alias?: {[property: string]: string}
   skipLines?: number
   limit?: number
@@ -24,4 +24,17 @@ export enum NextStrategy{
   STOP,
   // Process the row
   PROCESS
+}
+
+export interface CSVWriterOptions<T>{
+  headers: {
+    [P in keyof T]: string
+  }
+  delimiter?: string
+  format?: Partial<{
+    [P in keyof T]: (value: T[P]) => string
+  }>
+  defaultValue?: Partial<{
+    [P in keyof T]: string
+  }>
 }

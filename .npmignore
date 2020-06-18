@@ -5,6 +5,7 @@ __test__
 ./dist/__test__
 ./lib/
 node_modules/
+examples
 .eslintignore
 .eslintrc.js
 .gitignore

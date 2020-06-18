@@ -19,25 +19,27 @@ async function writeAsync (stream: fs.WriteStream, data: string): Promise<void> 
   })
 }
 
-type CSVEntry<T> = [keyof T, T[keyof T]][]
-
 class CSVStream {
   public async writeAsync<T> (filePath: string, rows: T[], {
     headers,
+    defaultValue: deafultValue = {},
     delimiter = ',',
     format = {}
   }: CSVWriterOptions<T>): Promise<void> {
     const writeStream = fs.createWriteStream(filePath)
-    const headerRow = headers.join(delimiter) + '\n'
+    const headerRow = Object.values(headers).join(delimiter) + '\n'
     await writeAsync(writeStream, headerRow)
     await Promise.all(rows.map(async row => {
-      const entries = Object.entries(row) as unknown as CSVEntry<T>
-      const mapValues = entries.map((entry) => {
-        const formatFunction = format[entry[0]]
-        if (formatFunction) {
-          return formatFunction(entry[1])
+      const orderColumns = Object.keys(headers) as unknown as Array<keyof T>
+      const mapValues = orderColumns.map(column => {
+        if (row[column]) {
+          const formatFunction = format[column]
+          if (formatFunction) {
+            return formatFunction(row[column])
+          }
+          return String(row[column])
         }
-        return String(entry[1])
+        return deafultValue[column] || 'NULL'
       })
       await writeAsync(writeStream, mapValues.join(delimiter) + '\n')
     }))

@@ -1,5 +1,5 @@
 import path from 'path'
-import CSVReader from '../../lib/readCSV'
+import CSVReader from '../../lib/CSVReader'
 
 const csvFileTest = path.resolve(__dirname, '..', 'tmp', 'file.csv')
 const csvFileTest2 = path.resolve(__dirname, '..', 'tmp', 'file2.csv')

@@ -28,8 +28,8 @@
 
 ## Overview
 
-The library is for read csv and manager csv tables like humam, automating the process of read
-and serializer the csv rows to obeject.
+The library is for read csv and manager csv tables like humam, automating the process of read or write
+and serializer the csv rows to object.
 
 ## Sumary
 
@@ -61,6 +61,8 @@ and serializer the csv rows to obeject.
 ## Features
 
 - Read an csv file and serializer data to `javascript/typescript` objects;
+- Write csv tables;
+- Automatic cast for numbers an booleans;
 - Alias in colunms of csv table;
 - Skip row of csv;
 - Limit numbers of rows.
@@ -70,10 +72,7 @@ and serializer the csv rows to obeject.
 
 ## Next Features
 
-- Improve Typescript docs;
-- Automatic and manual casting types;
 - Join csv tables;
-- Write csv tables;
 
 ## Install
 
@@ -102,12 +101,13 @@ The module _csv-node_ export:
 |name|description|
 |:-----|:-----|
 |AliasMap|An object for mapper alias columns names|
-|CSVNotFound|Error, throw if file not exist|
-|CSVReader|The classe of manager csv files|
-|ReadCSVOptions|The options for read an csv|
 |FilterFunction|An function for filter rows in csv files|
-
-The module esport also *NextStrategy*, *PipelineFunction*, *PredicateFunction*. Related to details of implementation.
+|PredicateFunction|An function for apply an predicate to rows in csv files|
+|CSVReadOptions|The options for read an csv|
+|CSVWriterOptions|The options for write an csv|
+|CSVReader|The class to read csv files|
+|CSVWriter|The class to write csv files|
+|CSVNotFound|Error, throw if file not exist|
 
 ### Basic usage
 
@@ -135,17 +135,55 @@ loadCsv()
 
 Run `node index.js` in your bash for tests.
 
+### CSVRead
+
+The examples below are for read an csv, they can be found in `examples` folder.
+
 #### First read
 
 Use `path` for absolutes paths in NodeJS.
 
+##### JS
+
 ```js
+const path = require("path")
+const { CSVReader } = require("csv-node")
+
+const fileName = path.resolve(__dirname, "names.csv")
+
 async function loadCsv() {
-  const fileName = path.resolve(__dirname, "names.csv")
   const reader = new CSVReader(fileName)
   const data = await reader.read()
   console.log(data)
 }
+
+loadCsv()
+  .then()
+  .catch(console.error)
+```
+
+##### TS
+
+```ts
+import path  from "path"
+import { CSVReader } from "csv-node"
+
+const fileName = path.resolve(__dirname, "names.csv")
+
+interface SimplePerson {
+  name: string
+  age: string
+}
+
+async function loadCsv() {
+  const reader = new CSVReader<SimplePerson>(fileName)
+  const data = await reader.read() 
+  console.log(data) // data is of type SimplePerson[]
+}
+
+loadCsv()
+  .then()
+  .catch(console.error)
 ```
 
 Output.
@@ -157,7 +195,7 @@ Output.
   { "name": "Ju", "age": "18" }
 ]
 ```
-Even though age is an number, but is loaded like an string, your can be use an map function
+Even though age is an number, but is loaded like an string, your can be use an map function or enable `castNumbers` option
 of _CSVReader_ for fix this.
 
 
@@ -171,6 +209,8 @@ The second param of contructor `CSVReader` is an object of options, the options 
 |skipLines|The numbers of lines for skipping|`number`|false|`0`|
 |limit|The numbers max of rows|`number`|false|`Infinity`|
 |delimiter|Delimiter between columns|`string`|false|`,`|
+|castNumbers|Automatic cast for numbers|`boolean`|false|`false`|
+|castBooleans|Automatic cast for booleans|`boolean`|false|`false`|
 |filter|Filter rows likes `Array.filter`|`FilterFunction`|false|`none`|
 |map|Map rows likes `Array.map`|`MapFunction`|false|`none`|
 
@@ -179,9 +219,16 @@ The second param of contructor `CSVReader` is an object of options, the options 
 #### Alias
 
 You doesn't need rename all headers of csv table.
+
+##### JS
+
 ```js
+const path = require("path")
+const { CSVReader } = require("csv-node")
+
+const fileName = path.resolve(__dirname, "names.csv")
+
 async function loadCsv() {
-  const fileName = path.resolve(__dirname, "names.csv")
   const reader = new CSVReader(fileName, {
     alias: {
       name: 'Name',
@@ -191,6 +238,39 @@ async function loadCsv() {
   const data = await reader.read()
   console.log(data)
 }
+
+loadCsv()
+  .then()
+  .catch(console.error)
+```
+
+##### TS
+
+```js
+import path  from "path"
+import { CSVReader } from "csv-node"
+
+const fileName = path.resolve(__dirname, "names.csv")
+
+interface SimplePerson {
+  Name: string
+  Age: string
+}
+
+async function loadCsv() {
+  const reader = new CSVReader<SimplePerson>(fileName, {
+    alias: {
+      name: 'Name',
+      age: 'Age'
+    }
+  })
+  const data = await reader.read()
+  console.log(data) // data is of type SimplePerson[]
+}
+
+loadCsv()
+  .then()
+  .catch(console.error)
 ```
 
 Output.
@@ -205,15 +285,53 @@ Output.
 
 #### Skip Lines
 
+This option will skip **x** lines, like `offset` in **SQL**.
+
+##### JS
+
 ```js
+const path = require("path")
+const { CSVReader } = require("csv-node")
+
+const fileName = path.resolve(__dirname, "names.csv")
+
 async function loadCsv() {
-  const fileName = path.resolve(__dirname, "names.csv")
   const reader = new CSVReader(fileName, {
     skipLines: 1
   })
   const data = await reader.read()
   console.log(data)
 }
+
+loadCsv()
+  .then()
+  .catch(console.error)
+```
+
+##### TS
+
+```ts
+import path  from "path"
+import { CSVReader } from "csv-node"
+
+const fileName = path.resolve(__dirname, "names.csv")
+
+interface SimplePerson {
+  name: string
+  age: string
+}
+
+async function loadCsv() {
+  const reader = new CSVReader<SimplePerson>(fileName, {
+    skipLines: 1
+  })
+  const data = await reader.read()
+  console.log(data) // data is of type SimplePerson[]
+}
+
+loadCsv()
+  .then()
+  .catch(console.error)
 ```
 
 Output.
@@ -227,22 +345,60 @@ Output.
 
 #### Limit
 
+The option is for limit the result size, like `limit` in **SQL**;
+
+##### JS
+
 ```js
+const path = require("path")
+const { CSVReader } = require("csv-node")
+
+const fileName = path.resolve(__dirname, "names.csv")
+
 async function loadCsv() {
-  const fileName = path.resolve(__dirname, "names.csv")
   const reader = new CSVReader(fileName, {
     limit: 2
   })
   const data = await reader.read()
   console.log(data)
 }
+
+loadCsv()
+  .then()
+  .catch(console.error)
+```
+
+##### TS
+
+```ts
+import path  from "path"
+import { CSVReader } from "csv-node"
+
+const fileName = path.resolve(__dirname, "names.csv")
+
+interface SimplePerson {
+  name: string
+  age: string
+}
+
+async function loadCsv() {
+  const reader = new CSVReader<SimplePerson>(fileName, {
+    limit: 2
+  })
+  const data = await reader.read()
+  console.log(data) // data is of type SimplePerson[]
+}
+
+loadCsv()
+  .then()
+  .catch(console.error)
 ```
 
 Output.
 ```json
 [
-  { "Name": "Joh", "Age": "19" },
-  { "Name": "Mary", "Age": "20" }
+  { "name": "Joh", "age": "19" },
+  { "name": "Mary", "age": "20" }
 ]
 ```
 
@@ -252,15 +408,54 @@ This is delimiter between colunms.
 
 #### Filter
 
+Filter the row of csv, the callback function is of type `FilterFunction`, this feat is like `Array.filter`.
+
+##### JS
+
 ```js
+const path = require("path")
+const { CSVReader } = require("csv-node")
+
+const fileName = path.resolve(__dirname, "names.csv")
+
 async function loadCsv() {
-  const fileName = path.resolve(__dirname, "names.csv")
   const reader = new CSVReader(fileName, {
     filter: (data) => data.age < 20
   })
   const data = await reader.read()
   console.log(data)
 }
+
+loadCsv()
+  .then()
+  .catch(console.error)
+```
+
+##### TS
+
+```ts
+import path  from "path"
+import { CSVReader } from "csv-node"
+
+const fileName = path.resolve(__dirname, "names.csv")
+
+interface SimplePerson {
+  name: string
+  age: string
+}
+
+async function loadCsv() {
+  const reader = new CSVReader<SimplePerson>(fileName, {
+    // the `data` is of type SimplePerson
+    filter: (data) => Number(data.age) < 20 
+  })
+  const data = await reader.read()
+  console.log(data) // data is of type SimplePerson[]
+}
+
+loadCsv()
+  .then()
+  .catch(console.error)
 ```
 
 Output.
@@ -273,15 +468,27 @@ Output.
 
 #### Map
 
+The option will map the csv row, the callback function is of type `MapFunction`, this feat is like `Array.map`.
+
+##### JS
+
 ```js
+const path = require("path")
+const { CSVReader } = require("csv-node")
+
+const fileName = path.resolve(__dirname, "names.csv")
+
 async function loadCsv() {
-  const fileName = path.resolve(__dirname, "names.csv")
   const reader = new CSVReader(fileName, {
     map: (data) => `${data.name}-${data.age}`
   })
   const data = await reader.read()
   console.log(data)
 }
+
+loadCsv()
+  .then()
+  .catch(console.error)
 ```
 
 Output.
@@ -289,14 +496,184 @@ Output.
 [ "Joh-19", "Mary-20", "Nicoll-21", "Ju-18" ]
 ```
 
+##### TS
+
+```ts
+import path  from "path"
+import { CSVReader } from "csv-node"
+
+const fileName = path.resolve(__dirname, "names.csv")
+
+interface SimplePerson {
+  name: string
+  age: string
+}
+
+interface Person {
+  name: string
+  age: number
+}
+
+async function loadCsv() {
+  const reader = new CSVReader<SimplePerson, Person>(fileName, {
+    // data is of type SimplePerson
+    map: (data) => ({
+      name: data.name,
+      age: Number(data.age)
+    })
+  })
+  const data = await reader.read()
+  console.log(data) // data is of type Person[]
+}
+
+loadCsv()
+  .then()
+  .catch(console.error)
+```
+
+
+Output.
+```json
+[
+  { "name": "Joh", "age": 19 },
+  { "name": "Mary", "age": 20 },
+  { "name": "Nicoll", "age": 21 },
+  { "name": "Ju", "age": 18 }
+]
+```
+
+#### Cast Numbers
+
+Automatic cast numbers.
+
+##### JS
+
+```js
+const path = require("path")
+const { CSVReader } = require("csv-node")
+
+const fileName = path.resolve(__dirname, "names.csv")
+
+async function loadCsv() {
+  const reader = new CSVReader(fileName, {
+    castNumbers: true
+  })
+  const data = await reader.read()
+  console.log(data)
+}
+
+loadCsv()
+  .then()
+  .catch(console.error)
+```
+
+##### TS
+
+```ts
+import path  from "path"
+import { CSVReader } from "csv-node"
+
+const fileName = path.resolve(__dirname, "names.csv")
+
+interface SimplePerson {
+  name: string
+  age: number
+}
+
+async function loadCsv() {
+  const reader = new CSVReader<SimplePerson>(fileName, {
+    castNumbers: true
+  })
+  const data = await reader.read()
+  console.log(data) // data is of type SimplePerson[]
+}
+
+loadCsv()
+  .then()
+  .catch(console.error)
+```
+
+Output.
+```json
+[
+  { "name": "Joh", "age": 19 },
+  { "name": "Mary", "age": 20 },
+  { "name": "Nicoll", "age": 21 },
+  { "name": "Ju", "age": 18 }
+]
+```
+
+#### Cast Booleans
+
+Automatic cast booleans.
+
+##### JS
+
+```js
+const path = require("path")
+const { CSVReader } = require("csv-node")
+
+const fileName = path.resolve(__dirname, "todos.csv")
+
+async function loadCsv() {
+  const reader = new CSVReader(fileName, {
+    castBooleans: true
+  })
+  const data = await reader.read()
+  console.log(data)
+}
+
+loadCsv()
+  .then()
+  .catch(console.error)
+```
+
+##### TS
+
+```ts
+import path  from "path"
+import { CSVReader } from "csv-node"
+
+const fileName = path.resolve(__dirname, "todos.csv")
+
+interface SimplePerson {
+  name: string
+  completed: boolean
+}
+
+async function loadCsv() {
+  const reader = new CSVReader<SimplePerson>(fileName, {
+    castBooleans: true
+  })
+  const data = await reader.read()
+  console.log(data) // data is of type SimplePerson[]
+}
+
+loadCsv()
+  .then()
+  .catch(console.error)
+```
+
+Output.
+```json
+[
+  { "name": "Todo 1", "completed": true },
+  { "name": "Todo 2", "completed": true },
+  { "name": "Todo 3", "completed": false },
+  { "name": "Todo 4", "completed": true },
+  { "name": "Todo 5", "completed": false }
+]
+```
+
 The options can be combined.
 
 Order of call of options:
 
-1. Alias
-3. Map
-3. Skip Lines & Limit
-4. Filter
+1. Alias;
+3. Map;
+3. Skip Lines & Limit;
+4. Filter;
+5. cast.
 
 ## The filePath
 
@@ -314,7 +691,7 @@ The `CSVReader` class provide the methods and fields bellow.
 |nativeHeaders|The real headers of csv table|`string []`|
 |data|The data of csv|`T[]`|
 
-All fields only is available before call function `read`.
+All fields only is available before call function `read`. The `nativeHeaders` and `headers` are available before call any methods.
 
 ### Methods
 
@@ -396,42 +773,95 @@ async function loadCsv() {
 // 49492.76999999994
 ```
 
-## CSVWriter API
+The options can be used.
 
-### Fields
+## CSVWriter
 
-|name|description|type|
-|:-----|:-----|:---:|
-|headers|The headers of columns|`string []`|
-|delimiter|The delimiter between colunms|`string`|
+### Options
 
-The first parameter of CSVWriter is the destination file, the second is an object, que contains the headers columns of the csv file and `delimiter`.
+The second param of contructor `CSVWriter` is an object of options, the options availables are.
 
-### Methods
+|name|description|type|required|default|
+|:-----|:-----|:---:|:-----|:-----|
+|headers|An object that will describe the columns|`object`|true|---|
+|delimiter|Delimiter between columns|`string`|false|`,`|
+|format|The function for format an column|`object`|false|`{}`|
+|defaultValue|An object with default value for empty columns|`object`|false|`{}`|
 
-|name|description|return|
-|:-----|:-----|:---:|
-|`writer(data: object)`|Write the object in csv|`Promise<void>`|
+### Options usage
 
+#### Headers
+
+You must provide the headers that will writer in csv file, you can rename columns or not.
+
+##### JS
 
 ```js
-async function writeCsv() {
-  const writer = new CSVWriter(file, {
-    headers: ['name', 'age']
-  })
-  const data = [
-    { name: 'David0', age: '18' },
-    { name: 'David1', age: '18' },
-    { name: 'David2', age: '18' },
-    { name: 'David3', age: '18' },
-    { name: 'David4', age: '18' }
-  ]
+const path = require("path")
+const { CSVWriter } = require("../../dist")
 
+const fileName = path.resolve(__dirname, "output.csv")
+
+const data = [
+  { name: 'David0', age: 18 },
+  { name: 'David1', age: 18 },
+  { name: 'David2', age: 18 },
+  { name: 'David3', age: 18 },
+  { name: 'David4', age: 18 }
+]
+
+async function loadCsv() {
+  const writer = new CSVWriter(fileName, {
+    headers: {
+      name: 'name',
+      age: 'age'
+    }
+  })
   await writer.write(data)
 }
-// write an like
+
+loadCsv()
+  .then()
+  .catch(console.error)
 ```
 
+##### TS
+
+```ts
+import path from "path"
+import { CSVWriter } from "../../dist"
+
+const fileName = path.resolve(__dirname, "output.csv")
+
+interface Person {
+  name: string
+  age: number
+}
+
+const data: Person[] = [
+  { name: 'David0', age: 18 },
+  { name: 'David1', age: 18 },
+  { name: 'David2', age: 18 },
+  { name: 'David3', age: 18 },
+  { name: 'David4', age: 18 }
+]
+
+async function loadCsv() {
+  const writer = new CSVWriter<Person>(fileName, {
+    headers: {
+      name: 'name',
+      age: 'age'
+    }
+  })
+  await writer.write(data)
+}
+
+loadCsv()
+  .then()
+  .catch(console.error)
+```
+
+Output.
 ```csv
 name,age
 David0,18
@@ -441,67 +871,190 @@ David3,18
 David4,18
 ```
 
-## Typescript Support
+#### Delimiter
 
-The library provider typescript support.
+The delimiter between columns.
 
-```ts
-interface Person {
-  name: string
-  age: string
-}
+#### Format
+
+The option is for apply an function before save, for example if object contain `Dates` is interesting save time only.
+
+##### JS
+
+```js
+const path = require("path")
+const { CSVWriter } = require("../../dist")
+
+const fileName = path.resolve(__dirname, "output.csv")
+
+const data = [
+  { name: 'David0', age: 18 },
+  { name: 'David1', age: 18 },
+  { name: 'David2', age: 18 },
+  { name: 'David3', age: 18 },
+  { name: 'David4', age: 18 }
+]
 
 async function loadCsv() {
-  const fileName = path.resolve(__dirname, "names.csv")
-  const reader = new CSVReader<Person>(fileName)
-  const data = await reader.read() // data is Person[]
-  console.log(data)
+  const writer = new CSVWriter(fileName, {
+    headers: {
+      name: 'name',
+      age: 'age'
+    },
+    format: {
+      age: (age) => `${age} years`
+    }
+  })
+  await writer.write(data)
 }
+
+loadCsv()
+  .then()
+  .catch(console.error)
 ```
 
-Output.
-```json
-[
-  { "Name": "Joh", "Age": "19" },
-  { "Name": "Mary", "Age": "20" },
-  { "Name": "Nicoll", "Age": "21" },
-  { "Name": "Ju", "Age": "18" }
-]
-```
-
-#### With map
+##### TS
 
 ```ts
+import path from "path"
+import { CSVWriter } from "../../dist"
+
+const fileName = path.resolve(__dirname, "output.csv")
+
+const data: Person[] = [
+  { name: 'David0', age: 18 },
+  { name: 'David1', age: 18 },
+  { name: 'David2', age: 18 },
+  { name: 'David3', age: 18 },
+  { name: 'David4', age: 18 }
+]
+
 interface Person {
   name: string
-  age: string
-}
-
-interface PersonMap {
-  fullName: string
   age: number
 }
 
 async function loadCsv() {
-  const fileName = path.resolve(__dirname, "names.csv")
-  const reader = new CSVReader<Person, PersonMap>(fileName, {
-    // data is Person
-    map: (data) => ({
-      fullName: data.name,
-      age: Number(data.age)
-    })
+  const writer = new CSVWriter<Person>(fileName, {
+    headers: {
+      name: 'name',
+      age: 'age'
+    },
+    format: {
+      age: (age) => `${age} years`
+    }
   })
-  const data = await reader.read() // data is PersonMap[]
-  console.log(data)
+  await writer.write(data)
 }
+
+loadCsv()
+  .then()
+  .catch(console.error)
 ```
 
 Output.
-```json
-[
-  { "fullName": "Joh", "age": 19 },
-  { "fullName": "Mary", "age": 20 },
-  { "fullName": "Nicoll", "age": 20 },
-  { "fullName": "Ju", "age": 18 }
-]
+```csv
+name,age
+David0,18 years
+David1,18 years
+David2,18 years
+David3,18 years
+David4,18 years
 ```
+
+#### Default value
+
+The option is for add fallback value if object not contains the column. The default value is `NULL`, but you can change.
+
+##### JS
+
+```js
+const path = require("path")
+const { CSVWriter } = require("../../dist")
+
+const fileName = path.resolve(__dirname, "output.csv")
+
+const data = [
+  { name: 'David0' },
+  { age: 18 },
+  { name: 'David2', age: 18 },
+  { name: 'David3'},
+  { name: 'David4', age: 18 }
+]
+
+async function loadCsv() {
+  const writer = new CSVWriter(fileName, {
+    headers: {
+      name: 'name',
+      age: 'age'
+    },
+    defaultValue: {
+      name: 'None',
+      age: '0'
+    }
+  })
+  await writer.write(data)
+}
+
+loadCsv()
+  .then()
+  .catch(console.error)
+```
+
+##### TS
+
+```ts
+import path  from "path"
+import { CSVWriter } from "../../dist"
+
+const fileName = path.resolve(__dirname, "output.csv")
+
+const data = [
+  { name: 'David0' },
+  { age: 18 },
+  { name: 'David2', age: 18 },
+  { name: 'David3'},
+  { name: 'David4', age: 18 }
+]
+
+interface Person {
+  name: string
+  age: number
+}
+
+async function loadCsv() {
+  const writer = new CSVWriter<Partial<Person>>(fileName, {
+    headers: {
+      name: 'name',
+      age: 'age'
+    },
+    defaultValue: {
+      name: 'None',
+      age: '0'
+    }
+  })
+  await writer.write(data)
+}
+
+loadCsv()
+  .then()
+  .catch(console.error)
+```
+
+Output.
+```csv
+name,age
+David0,0
+None,18
+David2,18
+David3,0
+David4,18
+```
+
+The options can be combinated.
+
+### Methods
+
+|name|description|return|
+|:-----|:-----|:---:|
+|`writer(data: object)`|Write the object in csv|`Promise<void>`|

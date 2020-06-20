@@ -1,6 +1,6 @@
 {
   "name": "csv-node",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "An parser for csv files",
   "main": "./dist/index.js",
   "keywords": ["NodeJS", "csv", "read", "parser", "typescript", "promise"],
@@ -33,7 +33,6 @@
     "test": "jest",
     "test:coverage": "jest --coverage",
     "build": "rm -rf ./dist && tsc --build",
-    "publish": "npm publish",
     "lint": "yarn eslint . --ext .ts,.js",
     "lint:fix": "yarn eslint . --ext .ts,.js --fix"
   }
